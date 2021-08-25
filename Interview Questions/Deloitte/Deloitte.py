@@ -7,6 +7,7 @@ Approx 2hrs 30mins
 
 import datetime as dt
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from pandas.io.parsers import read_csv
 import seaborn
@@ -31,8 +32,8 @@ for i in data_women.index:
         value = data_women['Gun Tim'][i][1]
 
         #Write variables
-        data_women['Hometown'][i] = data_women['Hometown'][i] + char
-        data_women['Gun Tim'][i] = value
+        data_women.loc[i,'Hometown'] = data_women.loc[i,'Hometown'] + char
+        data_women.loc[i,'Gun Tim'] = value
     else:
         data_women['Gun Tim'][i] = data_women['Gun Tim'][i][0]
 
@@ -46,7 +47,6 @@ data_all = data_men.append(data_women,ignore_index=True)
 #Remove special characters (.,*,#)
 data_all['Gun Tim'] = data_all['Gun Tim'].str.replace(r' ','')
 data_all['Gun Tim'] = data_all['Gun Tim'].str.replace(r'*','')
-data_all['Gun Tim'] = data_all['Gun Tim'].str.replace(r'**','')
 data_all['Gun Tim'] = data_all['Gun Tim'].str.replace(r'#','')
 data_all['Net Tim'] = data_all['Net Tim'].str.replace(r'#','')
 data_all['Net Tim'] = data_all['Net Tim'].str.replace(r'*','')
@@ -94,6 +94,7 @@ print(data_all_median)
 data_all_mode = data_all.groupby('Gender').agg(lambda x: pd.Series.mode(x).values[0])
 print(data_all_mode)
 boxplot = data_all.boxplot(column=['Net Tim'],by='Gender')
+plt.show()
 
 #Question Two
 data_all['Time Differential (Gun vs Net)'] = data_all['Gun Tim'] - data_all['Net Tim']
@@ -105,7 +106,7 @@ chris_doe = data_all[data_all['Name'] == 'Chris Doe']
 top_10_in_div = data_all.loc[data_all['Gender'] == 'Men']
 top_10_in_div = top_10_in_div.query('Ag >= 40 & Ag <= 49')
 
-ten_quantile = top_10_in_div.quantile(.1)
+ten_quantile = top_10_in_div.quantile(0.1)
 
 chris_doe_diffential_from_top10 = chris_doe['Net Tim'] - ten_quantile['Net Tim']
 
@@ -113,7 +114,11 @@ diff_mins = chris_doe_diffential_from_top10 / 60
 #Chris Doe would need to shave 8 mins 3 secs off his net time to break into the 90th percentile 
 #in his division
 
-seaborn.displot(top_10_in_div, x='Net Tim', kind='kde', bw_adjust=2)
+density2 = seaborn.displot(top_10_in_div, x='Net Tim', kind='kde', bw_adjust=2)
+x = ten_quantile['Gun Tim'] #Plot refrence line for 90th percentile
+plt.axvline(x, color='red')
+xx = chris_doe['Gun Tim'].to_numpy() #Plot chris doe net time
+plt.axvline(xx, color='green')
 plt.show()
 
 #Question Four
